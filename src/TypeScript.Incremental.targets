@@ -1,0 +1,46 @@
+﻿<!--
+***********************************************************************************************
+TypeScript.Incremental.targets
+
+WARNING:  Go ahead and modify this if you want. What am I, your nanny?
+
+This file overrides the standard typescript targets to do incremental compilation. Import this
+*after* you import Microsoft.TypeScript.targets.
+***********************************************************************************************
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="TypeScript.Tasks.VsTscEx" AssemblyFile="BetterTSC.dll" />
+
+  <PropertyGroup>
+    <TscExDependencyCache Condition="'$(TscExDependencyCache)' == ''">$(IntermediateOutputPath)tsc-deps.cache</TscExDependencyCache>
+  </PropertyGroup>
+
+  <!--
+      This replaces the equivalently-named target in Microsoft.TypeScript.targets; the only difference being the task
+      we call.
+  -->
+  <Target Name="CompileTypeScript" Condition="'$(BuildingProject)' != 'false'">
+    <VsTscEx
+      ToolPath="$(TscToolPath)"
+      ToolExe="$(TscToolExe)"
+      Configurations="$(TypeScriptBuildConfigurations)"
+      FullPathsToFiles="@(TypeScriptCompile)"
+      YieldDuringToolExecution="$(TscYieldDuringToolExecution)"
+      OutFile="$(TypeScriptOutFile)"
+      OutDir="$(TypeScriptOutDir)"
+      ProjectDir="$(ProjectDir)"
+      DependencyCache="$(TscExDependencyCache)"
+      >
+      <Output TaskParameter="GeneratedJavascript" ItemName="GeneratedJavascript" />
+    </VsTscEx>
+    <AssignTargetPath Files="@(GeneratedJavascript)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="GeneratedJavascriptWithTargetPath" />
+    </AssignTargetPath>
+    <ItemGroup>
+      <FilesForPackagingFromProject Include="@(GeneratedJavascriptWithTargetPath->'%(Identity)')"/>
+      <ContentWithTargetPath Include="@(GeneratedJavascriptWithTargetPath->'%(Identity)')"/>
+      <Content Include="@(GeneratedJavascript->'%(Identity)')"/>
+    </ItemGroup>
+  </Target>
+</Project>
