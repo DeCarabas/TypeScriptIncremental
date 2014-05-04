@@ -61,21 +61,11 @@
                             outputFile);
                         return true;
                     }
-
-                    //DependencyRecord record = GetDependencyRecord(fullPath, lastWrite);
-                    //var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    //for (int i = 0; i < record.Dependencies.Count; i++)
-                    //{
-                    //    DateTime effectiveTime = GetEffectiveModifiedTime(record.Dependencies[i]);
-                    //    if (effectiveTime > outputWrite)
-                    //    {
-                    //        return true;
-                    //    }
-                    //}
                 }
                 else
                 {
-                    // No output file: who can say? User must have added it to their stuff for a reason.
+                    // No output file: who can say? User must have added it to their stuff for a reason. Kids: don't 
+                    // mark your .d.ts files as TypeScriptCompile?
                     Log.LogMessage(MessageImportance.Low, "Recompile '{0}' because output file is null.", fullPath);
                     return true;
                 }
@@ -198,7 +188,7 @@
             try
             {
                 this.commonPath = ComputeCommonDirectoryPath();
-                List<ITaskItem> inputs = GetInputsToRecompile();
+                List<ITaskItem> inputs = GetInputsToRecompile(FullPathsToFiles);
                 if (inputs.Count == 0)
                 {
                     Log.LogMessage(MessageImportance.Normal, "Skipping typescript compile: all outputs up-to-date");
@@ -214,20 +204,24 @@
             }
         }
 
-        List<ITaskItem> GetInputsToRecompile()
+        /// <summary>
+        /// Determine the set of input files to recompile.
+        /// </summary>
+        /// <returns>The list of task items to recompile.</returns>
+        List<ITaskItem> GetInputsToRecompile(IList<ITaskItem> inputs)
         {
             Stopwatch sw = Stopwatch.StartNew();
             Log.LogMessage(MessageImportance.Low, "Finding changed files");
-            List<ITaskItem> inputs = new List<ITaskItem>();
-            for (int i = 0; i < FullPathsToFiles.Length; i++)
+            List<ITaskItem> outputs = new List<ITaskItem>();
+            for (int i = 0; i < inputs.Count; i++)
             {
-                string path = GetFullPath(FullPathsToFiles[i]);
-                if (Consider(path)) { inputs.Add(FullPathsToFiles[i]); }
+                string path = GetFullPath(inputs[i]);
+                if (Consider(path)) { outputs.Add(inputs[i]); }
             }
             Log.LogMessage(MessageImportance.Low, "  Done in {0}ms", sw.ElapsedMilliseconds);
             Log.LogMessage(MessageImportance.Low, "  Computed {0} ({1}) EMTs", this.emtCount, this.emtMiss);
 
-            return inputs;
+            return outputs;
         }
 
         /// <summary>
@@ -249,11 +243,21 @@
             return record;
         }
 
+        /// <summary>
+        /// Compute the full path for the given task item.
+        /// </summary>
+        /// <param name="item">The item for which we want fhe full path.</param>
+        /// <returns>The requested path.</returns>
         static string GetFullPath(ITaskItem item)
         {
             return Path.GetFullPath(item.GetMetadata("FullPath"));
         }
 
+        /// <summary>
+        /// Attempts to load the dependency cache from disk.
+        /// </summary>
+        /// <remarks>We use a custom format here because time is of the essence: using JSON via JSON.NET took ~150ms 
+        /// for my large project. This format takes 6ms.</remarks>
         void LoadDependencyCache()
         {
             if (!String.IsNullOrEmpty(DependencyCache) && File.Exists(DependencyCache))
@@ -303,6 +307,12 @@
             }
         }
 
+        /// <summary>
+        /// Attempts to save the dependency cache to disk.
+        /// </summary>
+        /// <remarks>We use a custom format here because load time is of the essence; this save time doesn't matter
+        /// much. (We assume the dependency cache is rarely out of date, and if it is, you'll be running the compiler
+        /// anyway.)</remarks>
         void SaveDependencyCache()
         {
             if (!String.IsNullOrEmpty(DependencyCache) && this.cacheDirty)
@@ -335,6 +345,9 @@
             }
         }
 
+        /// <summary>
+        /// A class to keep track of the dependency graph of our files.
+        /// </summary>
         class DependencyRecord
         {
             static readonly Regex referenceTag = new Regex(
