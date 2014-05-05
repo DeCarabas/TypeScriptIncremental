@@ -10,7 +10,7 @@ This file overrides the standard typescript targets to do incremental compilatio
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <UsingTask TaskName="TypeScript.Tasks.VsTscEx" AssemblyFile="BetterTSC.dll" />
+  <UsingTask TaskName="TypeScript.Tasks.VsTscEx" AssemblyFile="TypeScriptIncremental.dll" />
 
   <PropertyGroup>
     <TscExDependencyCache Condition="'$(TscExDependencyCache)' == ''">$(IntermediateOutputPath)tsc-deps.cache</TscExDependencyCache>
