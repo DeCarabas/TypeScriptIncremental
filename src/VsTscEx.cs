@@ -179,6 +179,10 @@
             return Path.ChangeExtension( fullPath, "js" );
         }
 
+        /// <summary>
+        /// Executes the task.
+        /// </summary>
+        /// <returns>true if the task was successful, otherwise false</returns>
         public override bool Execute()
         {
             if ( !String.IsNullOrEmpty( OutFile ) )
