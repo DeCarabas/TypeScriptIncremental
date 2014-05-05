@@ -13,7 +13,6 @@ This file overrides the standard typescript targets to do incremental compilatio
   <UsingTask TaskName="TypeScript.Tasks.VsTscEx" AssemblyFile="TypeScriptIncremental.dll" />
 
   <PropertyGroup>
-    <DisableFastUpToDateCheck>true</
     <TscExDependencyCache Condition="'$(TscExDependencyCache)' == ''">$(IntermediateOutputPath)tsc-deps.cache</TscExDependencyCache>
   </PropertyGroup>
 
