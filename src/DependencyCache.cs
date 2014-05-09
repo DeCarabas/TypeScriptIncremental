@@ -50,6 +50,14 @@
         }
 
         /// <summary>
+        /// Gets the count of items currently tracked in the cache.
+        /// </summary>
+        public int Count
+        {
+            get { return this.cache.Count; }
+        }
+
+        /// <summary>
         /// Gets a boolean value indicating whether or not the cache has changes that should be written to disk.
         /// </summary>
         public bool IsModified
