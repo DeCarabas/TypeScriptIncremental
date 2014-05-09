@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="DependencyRecord.cs" />
     <Compile Include="DependencyCache.cs" />
+    <Compile Include="IncrementalAnalysis.cs" />
     <Compile Include="VsTscEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

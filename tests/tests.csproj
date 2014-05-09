@@ -59,7 +59,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AssemblyInit.cs" />
-    <Compile Include="CacheTests.cs" />
+    <Compile Include="IncrementalAnalysisTests.cs" />
+    <Compile Include="DependencyCacheTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XSpec.cs" />
   </ItemGroup>
