@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -92,12 +93,12 @@ namespace TypeScript.Tasks.Tests
             DateTime? newer = current.Value.AddHours(1);
 
             var cases = new[] {
-                new { topIn = current, topOut = none,    baseIn = current, baseOut = current, needRecompile = true },
-                new { topIn = current, topOut = older,   baseIn = current, baseOut = current, needRecompile = true },
-                new { topIn = current, topOut = newer,   baseIn = current, baseOut = none,    needRecompile = false },
-                new { topIn = current, topOut = current, baseIn = newer,   baseOut = current, needRecompile = true },
-                new { topIn = current, topOut = current, baseIn = older,   baseOut = older,   needRecompile = false },
-                new { topIn = current, topOut = newer,   baseIn = newer,   baseOut = current, needRecompile = false },
+                new { topIn = current, topOut = none,    baseIn = current, baseOut = current, doTop = true,  doBase = false },
+                new { topIn = current, topOut = older,   baseIn = current, baseOut = current, doTop = true,  doBase = false },
+                new { topIn = current, topOut = newer,   baseIn = current, baseOut = none,    doTop = false, doBase = true },
+                new { topIn = current, topOut = current, baseIn = newer,   baseOut = current, doTop = true,  doBase = true },
+                new { topIn = current, topOut = current, baseIn = older,   baseOut = older,   doTop = false, doBase = false },
+                new { topIn = current, topOut = newer,   baseIn = newer,   baseOut = current, doTop = false, doBase = true },
             };
 
             Func<DateTime?, string> desc = (dt) =>
@@ -114,12 +115,13 @@ namespace TypeScript.Tasks.Tests
                 // Description
                 //
                 string caseDescription = String.Format(
-                    "topIn: {0}, topOut: {1}, baseIn: {2}, baseOut: {3}, needRecompile: {4}",
+                    "topIn: {0}, topOut: {1}, baseIn: {2}, baseOut: {3}, doTop: {4}, doBase: {5}",
                     desc(cases[i].topIn),
                     desc(cases[i].topOut),
                     desc(cases[i].baseIn),
                     desc(cases[i].baseOut),
-                    cases[i].needRecompile);
+                    cases[i].doTop,
+                    cases[i].doBase);
 
                 Console.WriteLine("Running case {0}: {1}", i, caseDescription);
 
@@ -128,10 +130,12 @@ namespace TypeScript.Tasks.Tests
                 string baseName;
                 string baseOut;
                 CreateTestFile(cases[i].baseIn, cases[i].baseOut, null, out baseName, out baseOut);
+                ITaskItem baseItem = CreateTaskItem(baseName);
 
                 string topName;
                 string topOut;
                 CreateTestFile(cases[i].topIn, cases[i].topOut, new string[] { baseName }, out topName, out topOut);
+                ITaskItem topItem = CreateTaskItem(topName);
 
                 Func<string, string> getOutput = (f) =>
                     {
@@ -145,17 +149,92 @@ namespace TypeScript.Tasks.Tests
                 //
                 TaskLoggingHelper log = CreateFakeLog();
                 DependencyCache cache = new DependencyCache();
-                bool result = IncrementalAnalysis.Consider(topName, cache, log, getOutput);
+                bool resultTop = IncrementalAnalysis.Consider(topName, cache, log, getOutput);
+                bool resultBase = IncrementalAnalysis.Consider(baseName, cache, log, getOutput);
+                IList<ITaskItem> recompiles = IncrementalAnalysis.GetInputsToRecompile(
+                    cache, new[] { baseItem, topItem }, log, getOutput);
 
                 // Analysis
                 //
-                Assert.AreEqual(cases[i].needRecompile, result, "Mismatch on test case {0} ({1})", i, caseDescription);
+                Assert.AreEqual(cases[i].doTop, resultTop, "Mismatch on doTop in case {0} ({1})", i, caseDescription);
+                Assert.AreEqual(cases[i].doBase, resultBase, "Mismatch on doBase in case {0} ({1})", i, caseDescription);
+                AssertMaybeContains(recompiles, topItem, cases[i].doTop, i, caseDescription);
+                AssertMaybeContains(recompiles, baseItem, cases[i].doBase, i, caseDescription);
             }
         }
 
-        private TaskLoggingHelper CreateFakeLog()
+        [TestMethod]
+        public void DescribeConsiderIOException()
+        {
+            bool result = IncrementalAnalysis.Consider(
+                "foo", 
+                new DependencyCache(), 
+                CreateFakeLog(), 
+                f => { throw new IOException("WUT"); });
+
+            Assert.IsTrue(result, "We should be recompiling files where we get an IO error.");
+        }
+
+        [TestMethod]
+        public void DescribeConsiderNoOutput()
+        {
+            bool result = IncrementalAnalysis.Consider("foo", new DependencyCache(), CreateFakeLog(), f => null);
+            Assert.IsTrue(result, "We should be recompiling files with no output (by fiat, at this time).");
+        }
+
+        static void AssertMaybeContains(
+            IList<ITaskItem> items, ITaskItem item, bool shouldContain, int caseIndex, string caseDescription)
+        {
+            Assert.AreEqual(
+                shouldContain,
+                items.Contains(item),
+                "Items should{0} contain top in case {1} ({2})",
+                shouldContain
+                    ? ""
+                    : " not",
+                caseIndex,
+                caseDescription);
+        }
+
+        TaskLoggingHelper CreateFakeLog()
         {
             return new TaskLoggingHelper(new FakeBuildEngine(), "Fake");
+        }
+
+        ITaskItem CreateTaskItem(string path)
+        {
+            return new TaskItem(path);
+        }
+
+        void CreateTestFile(
+            DateTime? inputTime,
+            DateTime? outputTime,
+            string[] dependencies,
+            out string inFile,
+            out string outFile)
+        {
+            inFile = Path.GetTempFileName();
+            using (var writer = File.CreateText(inFile))
+            {
+                if (dependencies != null)
+                {
+                    for (int i = 0; i < dependencies.Length; i++)
+                    {
+                        writer.WriteLine(@"/// <reference path=""{0}"" />", dependencies[i]);
+                    }
+                }
+
+                writer.WriteLine();
+                writer.WriteLine("var x = 10;");
+            }
+            File.SetLastWriteTimeUtc(inFile, inputTime.Value);
+
+            outFile = inFile + ".js";
+            if (outputTime != null)
+            {
+                File.WriteAllText(outFile, "");
+                File.SetLastWriteTimeUtc(outFile, outputTime.Value);
+            }
         }
 
         class FakeBuildEngine : IBuildEngine
@@ -195,38 +274,6 @@ namespace TypeScript.Tasks.Tests
             public void LogWarningEvent(BuildWarningEventArgs e)
             {
                 Console.WriteLine("W: {0}", e.Message);
-            }
-        }
-
-
-        void CreateTestFile(
-            DateTime? inputTime,
-            DateTime? outputTime,
-            string[] dependencies,
-            out string inFile,
-            out string outFile)
-        {
-            inFile = Path.GetTempFileName();
-            using (var writer = File.CreateText(inFile))
-            {
-                if (dependencies != null)
-                {
-                    for (int i = 0; i < dependencies.Length; i++)
-                    {
-                        writer.WriteLine(@"/// <reference path=""{0}"" />", dependencies[i]);
-                    }
-                }
-
-                writer.WriteLine();
-                writer.WriteLine("var x = 10;");
-            }
-            File.SetLastWriteTimeUtc(inFile, inputTime.Value);
-
-            outFile = inFile + ".js";
-            if (outputTime != null)
-            {
-                File.WriteAllText(outFile, "");
-                File.SetLastWriteTimeUtc(outFile, outputTime.Value);
             }
         }
     }
