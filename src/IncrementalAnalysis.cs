@@ -128,6 +128,7 @@
             }
 
             string result = sharedParts[0];
+            if (result.EndsWith(":")) { result += @"\"; }
             for (int i = 1; i < sharedLength; i++)
             {
                 result = Path.Combine(result, sharedParts[i]);

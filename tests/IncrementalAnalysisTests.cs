@@ -7,6 +7,7 @@ using Doty.Spec;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace TypeScript.Tasks.Tests
 {
@@ -22,6 +23,33 @@ namespace TypeScript.Tasks.Tests
         {
             this.baseDir = Path.Combine(TestContext.DeploymentDirectory, Guid.NewGuid().ToString());
             Directory.CreateDirectory(this.baseDir);
+        }
+
+        [TestMethod]
+        public void DescribeComputeCommonDirectoryPath()
+        {
+            var cases = new[] 
+            {
+                new { paths = new[] { @"c:\a\b", @"c:\a\c" },            result = @"c:\a" },
+                new { paths = new[] { @"c:\a\b", @"c:\a\c", @"c:\a\d" }, result = @"c:\a" },
+                new { paths = new[] { @"c:\a\b\c", @"c:\a\b\d" },        result = @"c:\a\b" },
+                new { paths = new[] { @"c:\a\b", @"c:\c\d" },            result = @"c:\" },
+                new { paths = new[] { @"c:\a\b", @"d:\a\b" },            result = (string)null },
+                new { paths = new[] { @"c:\a\b", @"d:\e\f" },            result = (string)null },
+                new { paths = new[] { @"c:\a\b", @"d:\e\f.d.ts" },       result = @"c:\a\b" },
+            };
+
+            for(int i =0; i < cases.Length; i++)
+            {
+                Assert.AreEqual(
+                    cases[i].result, 
+                    IncrementalAnalysis.ComputeCommonDirectoryPath(cases[i].paths));
+
+                ITaskItem[] items = cases[i].paths.Select(p => CreateTaskItem(p)).ToArray();
+                Assert.AreEqual(
+                    cases[i].result,
+                    IncrementalAnalysis.ComputeCommonDirectoryPath(items));
+            }
         }
 
         [TestMethod]
