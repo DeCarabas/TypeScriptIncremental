@@ -30,27 +30,49 @@ namespace TypeScript.Tasks.Tests
         {
             var cases = new[] 
             {
-                new { paths = new[] { @"c:\a\b", @"c:\a\c" },            result = @"c:\a" },
-                new { paths = new[] { @"c:\a\b", @"c:\a\c", @"c:\a\d" }, result = @"c:\a" },
-                new { paths = new[] { @"c:\a\b\c", @"c:\a\b\d" },        result = @"c:\a\b" },
-                new { paths = new[] { @"c:\a\b", @"c:\c\d" },            result = @"c:\" },
-                new { paths = new[] { @"c:\a\b", @"d:\a\b" },            result = (string)null },
-                new { paths = new[] { @"c:\a\b", @"d:\e\f" },            result = (string)null },
-                new { paths = new[] { @"c:\a\b", @"d:\e\f.d.ts" },       result = @"c:\a\b" },
+                new { paths = new[] { @"c:\a\b.ts", @"c:\a\c.ts" },               result = @"c:\a\" },
+                new { paths = new[] { @"c:\a\b.ts", @"c:\a\c.ts", @"c:\a\d.ts" }, result = @"c:\a\" },
+                new { paths = new[] { @"c:\a\b\c.ts", @"c:\a\b\d.ts" },           result = @"c:\a\b\" },
+                new { paths = new[] { @"c:\a\b\c.ts", @"c:\a.ts" },               result = @"c:\" },
+                new { paths = new[] { @"c:\a\b.ts", @"c:\c\d.ts" },               result = @"c:\" },
+                new { paths = new[] { @"c:\a\b.ts", @"d:\a\b.ts" },               result = (string)null },
+                new { paths = new[] { @"c:\a\b.ts", @"d:\e\f.ts" },               result = (string)null },
+                new { paths = new[] { @"c:\a\b.ts", @"d:\e\f.d.ts" },             result = @"c:\a\" },
+                new { paths = new[] { @"c:\a\b\c.ts", @"c:\a\d.ts" },             result = @"c:\a\" },
             };
 
-            for(int i =0; i < cases.Length; i++)
+            for (int i = 0; i < cases.Length; i++)
             {
                 Assert.AreEqual(
-                    cases[i].result, 
-                    IncrementalAnalysis.ComputeCommonDirectoryPath(cases[i].paths));
+                    cases[i].result,
+                    IncrementalAnalysis.ComputeCommonDirectoryPath(cases[i].paths), "Case {0}.0", i);
 
                 ITaskItem[] items = cases[i].paths.Select(p => CreateTaskItem(p)).ToArray();
                 Assert.AreEqual(
                     cases[i].result,
-                    IncrementalAnalysis.ComputeCommonDirectoryPath(items));
+                    IncrementalAnalysis.ComputeCommonDirectoryPath(items), "Case {0}.1", i);
             }
         }
+
+        [TestMethod]
+        public void DescribeComputeOutputFile()
+        {
+            var cases = new[] 
+            {
+                new { file= @"c:\a\b.ts",     common = @"c:\a\",      outdir = @"d:\", result = @"d:\b.js" },
+                new { file= @"c:\a\b\c.ts",   common = @"c:\a\",      outdir = @"d:\", result = @"d:\b\c.js" },
+                new { file= @"c:\a\b\c.ts",   common = (string)null, outdir = @"d:\", result = @"c:\a\b\c.js" },
+                new { file= @"c:\a\b\c.d.ts", common = (string)null, outdir = @"d:\", result = (string)null },
+            };
+
+            for (int i = 0; i < cases.Length; i++)
+            {
+                Assert.AreEqual(
+                    cases[i].result,
+                    IncrementalAnalysis.ComputeOutputFile(cases[i].file, cases[i].common, cases[i].outdir));
+            }
+        }
+
 
         [TestMethod]
         public void DescribeConsiderStandaloneFile()
@@ -195,9 +217,9 @@ namespace TypeScript.Tasks.Tests
         public void DescribeConsiderIOException()
         {
             bool result = IncrementalAnalysis.Consider(
-                "foo", 
-                new DependencyCache(), 
-                CreateFakeLog(), 
+                "foo",
+                new DependencyCache(),
+                CreateFakeLog(),
                 f => { throw new IOException("WUT"); });
 
             Assert.IsTrue(result, "We should be recompiling files where we get an IO error.");

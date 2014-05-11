@@ -103,7 +103,7 @@
                 string fullPath = paths[i];
                 if (fullPath.EndsWith(".d.ts", StringComparison.OrdinalIgnoreCase)) { continue; }
 
-                string[] segments = fullPath.Split(Path.DirectorySeparatorChar);
+                string[] segments = Path.GetDirectoryName(fullPath).Split(Path.DirectorySeparatorChar);
                 if (sharedLength == -1)
                 {
                     sharedParts = segments;
@@ -133,6 +133,7 @@
             {
                 result = Path.Combine(result, sharedParts[i]);
             }
+            if (!result.EndsWith(@"\")) {  result += @"\"; }
             return result;
         }
 
