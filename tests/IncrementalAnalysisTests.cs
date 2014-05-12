@@ -73,7 +73,6 @@ namespace TypeScript.Tasks.Tests
             }
         }
 
-
         [TestMethod]
         public void DescribeConsiderStandaloneFile()
         {

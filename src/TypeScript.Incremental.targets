@@ -22,15 +22,15 @@ This file overrides the standard typescript targets to do incremental compilatio
   -->
   <Target Name="CompileTypeScript" Condition="'$(BuildingProject)' != 'false'">
     <VsTscEx
+      Configurations="$(TypeScriptBuildConfigurations)"
+      DependencyCache="$(TscExDependencyCache)"
+      FullPathsToFiles="@(TypeScriptCompile)"
+      OutDir="$(TypeScriptOutDir)"
+      OutFile="$(TypeScriptOutFile)"
+      ProjectDir="$(ProjectDir)"
       ToolPath="$(TscToolPath)"
       ToolExe="$(TscToolExe)"
-      Configurations="$(TypeScriptBuildConfigurations)"
-      FullPathsToFiles="@(TypeScriptCompile)"
       YieldDuringToolExecution="$(TscYieldDuringToolExecution)"
-      OutFile="$(TypeScriptOutFile)"
-      OutDir="$(TypeScriptOutDir)"
-      ProjectDir="$(ProjectDir)"
-      DependencyCache="$(TscExDependencyCache)"
       >
       <Output TaskParameter="GeneratedJavascript" ItemName="GeneratedJavascript" />
     </VsTscEx>
