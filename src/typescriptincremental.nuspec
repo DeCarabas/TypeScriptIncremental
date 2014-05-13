@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>typescriptincremental</id>
+    <version>1.0</version>
+    <authors>John Doty</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+
+    <description>A drop-in augmentation for the typescript targets file that
+    causes the compiler to run incrementally, potentially saving quite a lot
+    of time.</description>
+
+    <language>en-US</language>
+    <projectUrl>https://github.com/DeCarabas/TypeScriptIncremental</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/DeCarabas/TypeScriptIncremental/master/LICENSE</licenseUrl>
+
+    <references>
+    </references>
+  </metadata>
+
+  <files>
+    <file src="bin\Debug\TypeScriptIncremental.dll" />
+    <file src="bin\Debug\TypeScript.Incremental.targets" />
+  </files>    
+</package>
