@@ -16,7 +16,7 @@ directory.
 
 You can also add the [TypeScript.Incremental nuget
 package](https://www.nuget.org/packages/TypeScript.Incremental/) to your
-project, which will do all the heavy lifting for you.
+project, which will does all the heavy lifting for you.
 
 ## How does it work?
 
