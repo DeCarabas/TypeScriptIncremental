@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Doty.Spec;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace TypeScript.Tasks.Tests
+﻿namespace TypeScript.Tasks.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using Doty.Spec;
+    using Microsoft.Build.Evaluation;
+    using Microsoft.Build.Execution;
+    using Microsoft.Build.Framework;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     [DeploymentItem(@"TypeScript.Incremental.targets")]
     [DeploymentItem(@"testproject\", @"testproject\")]

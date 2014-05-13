@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Doty.Spec;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
-
-namespace TypeScript.Tasks.Tests
+﻿namespace TypeScript.Tasks.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using Doty.Spec;
+    using Microsoft.Build.Framework;
+    using Microsoft.Build.Utilities;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class IncrementalAnalysisTests
     {

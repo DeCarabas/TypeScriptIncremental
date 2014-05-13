@@ -1,12 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Doty.Spec;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace TypeScript.Tasks.Tests
+﻿namespace TypeScript.Tasks.Tests
 {
+    using System;
+    using System.IO;
+    using System.Text;
+    using System.Threading;
+    using Doty.Spec;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class CacheTests
     {

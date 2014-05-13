@@ -59,7 +59,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AssemblyInit.cs" />
     <Compile Include="VsTscExTests.cs" />
     <Compile Include="IncrementalAnalysisTests.cs" />
     <Compile Include="DependencyCacheTests.cs" />
