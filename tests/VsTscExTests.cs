@@ -48,8 +48,19 @@
                 })
                 .When("I am just starting out", () => { })
                     .It("doesn't have js files", () => Assert.AreEqual(
-                            0, Directory.GetFiles(projectDirectory, "*.js", SearchOption.AllDirectories).Length))
+                        0, Directory.GetFiles(projectDirectory, "*.js", SearchOption.AllDirectories).Length))
 
+                .When("I build the project", () => result = Build(projectCollection, project, logger))
+                    .It("succeeds", () => Assert.AreEqual(BuildResultCode.Success, result.OverallResult))
+                    .It("still didn't generate any files", () => Assert.AreEqual(
+                        0, Directory.GetFiles(projectDirectory, "*.js", SearchOption.AllDirectories).Length))
+
+                .When("I add the TypeScriptCompile items to the project", () =>
+                    {
+                        project.AddItem("TypeScriptCompile", "top.ts");
+                        project.AddItem("TypeScriptCompile", "base.ts");
+                        project.AddItem("TypeScriptCompile", "third.ts");
+                    })
                 .When("I build the project", () => result = Build(projectCollection, project, logger))
                     .It("builds successfully", () => Assert.AreEqual(BuildResultCode.Success, result.OverallResult))
                     .It("created all the JS files", () =>

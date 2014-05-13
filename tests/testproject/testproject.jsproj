@@ -29,9 +29,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- These items are inserted by the test, actually. -->
+    <!--
     <TypeScriptCompile Include="base.ts" />
     <TypeScriptCompile Include="top.ts" />
     <TypeScriptCompile Include="third.ts" />
+    -->
   </ItemGroup>
 
   <ItemGroup>
