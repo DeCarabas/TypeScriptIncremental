@@ -58,11 +58,13 @@
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether or not the cache has changes that should be written to disk.
+        /// Gets or sets a boolean value indicating whether or not the cache has changes that should be written to 
+        /// disk.
         /// </summary>
         public bool IsModified
         {
             get { return this.modified; }
+            set { this.modified = true; }
         }
 
         /// <summary>

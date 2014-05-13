@@ -79,6 +79,13 @@ namespace TypeScript.Tasks.Tests
                     .It("returns all of the output javascript files",
                         () => Assert.AreEqual(3, generatedJavascript.Length))
 
+                .When("I set the TypeScriptOutFile property", 
+                    () => projectCollection.SetGlobalProperty("TypeScriptOutFile", "zomg.js"))
+                .When("I rebuild the project", () => result = Build(projectCollection, project, logger))
+                    .It("fails the build", () => Assert.AreEqual(BuildResultCode.Failure, result.OverallResult))
+
+                .When("I reset the TypeScriptOutFile property", 
+                    () => projectCollection.RemoveGlobalProperty("TypeScriptOutFile"))
                 .When("I touch the third file", () =>
                     {
                         generatedJavascript = null;
