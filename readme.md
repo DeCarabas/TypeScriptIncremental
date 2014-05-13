@@ -14,6 +14,21 @@ something like this:
 For an example of just such a project, look in the tests\testproject
 directory.
 
+## How does it work?
+
+That's easy! It works by maintaining a dependency graph between the
+TypeScript files in your project. It's not very smart about it, though, and
+it requires that you actually tell it about your dependencies by putting a
+reference tag at the start of the file, e.g.:
+
+    /// <reference path="other.ts" />
+
+At some point, maybe it will learn how to understand
+
+    module('other')
+
+too. But for now, it only understands the simple one.
+
 ## License
 
 Copyright (C) 2014 John Doty
