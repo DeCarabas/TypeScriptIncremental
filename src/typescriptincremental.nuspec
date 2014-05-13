@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>typescriptincremental</id>
+    <id>TypeScript.Incremental</id>
     <version>1.0</version>
     <authors>John Doty</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -19,7 +19,8 @@
   </metadata>
 
   <files>
-    <file src="bin\Debug\TypeScriptIncremental.dll" />
-    <file src="bin\Debug\TypeScript.Incremental.targets" />
+    <file src="bin\Debug\TypeScriptIncremental.dll" target="build" />
+    <file src="bin\Debug\TypeScriptIncremental.pdb" target="build" />
+    <file src="bin\Debug\TypeScript.Incremental.targets" target="build" />
   </files>    
 </package>

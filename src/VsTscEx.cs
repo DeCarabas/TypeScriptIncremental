@@ -22,6 +22,8 @@ SOFTWARE.
 namespace TypeScript.Tasks
 {
     using System;
+    using System.IO;
+    using System.Reflection;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
 
@@ -88,6 +90,11 @@ namespace TypeScript.Tasks
         public string ToolPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the full path to the typescript DLL, so that we can make sure it's loaded before we delegate.
+        /// </summary>
+        public string TypeScriptPath { get; set; }
+
+        /// <summary>
         /// Gets or sets a switch that indicates if the task will yield the node during tool execution.
         /// </summary>
         public bool YieldDuringToolExecution { get; set; }
@@ -111,15 +118,40 @@ namespace TypeScript.Tasks
             return innerTask.Execute();
         }
 
+        bool EnsureTypescriptLoaded(string path)
+        {
+            try
+            {
+                Assembly assembly = Assembly.LoadFrom(path);
+                assembly.GetType("TypeScript.Tasks.VsTsc");
+                return true;
+            }
+            catch(Exception e)
+            {
+                Log.LogMessage("Exception loading typescript DLL: {0}", e.Message);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Executes the task.
         /// </summary>
         /// <returns>true if the task was successful, otherwise false</returns>
         public override bool Execute()
         {
+            if (FullPathsToFiles == null) { return true; }
+
             if (!String.IsNullOrEmpty(OutFile))
             {
                 Log.LogError("The OutFile parameter on the VsTscEx task is not supported right now, sorry.");
+                return false;
+            }
+
+            if (!EnsureTypescriptLoaded(TypeScriptPath))
+            {
+                Log.LogError(
+                    "The TypeScriptPath property is not set up correctly; make sure you have the VsToolsPath and " +
+                    "VisualStudioVersion properties set correctly.");
                 return false;
             }
 

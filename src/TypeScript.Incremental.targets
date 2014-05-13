@@ -9,6 +9,11 @@ This file overrides the standard typescript targets to do incremental compilatio
 ***********************************************************************************************
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <VsToolsPath Condition="'$(VsToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VsToolsPath>
+    <TscTaskPath Condition="'$(TypeScriptTaskPath)' == ''">$(VSToolsPath)\TypeScript\TypeScript.tasks.dll</TscTaskPath>
+  </PropertyGroup>
 
   <UsingTask TaskName="TypeScript.Tasks.VsTscEx" AssemblyFile="TypeScriptIncremental.dll" />
 
@@ -30,6 +35,7 @@ This file overrides the standard typescript targets to do incremental compilatio
       ProjectDir="$(ProjectDir)"
       ToolPath="$(TscToolPath)"
       ToolExe="$(TscToolExe)"
+      TypeScriptPath="$(TscTaskPath)"
       YieldDuringToolExecution="$(TscYieldDuringToolExecution)"
       >
       <Output TaskParameter="GeneratedJavascript" ItemName="GeneratedJavascript" />
