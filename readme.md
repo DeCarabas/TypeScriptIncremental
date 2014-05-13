@@ -14,6 +14,10 @@ something like this:
 For an example of just such a project, look in the tests\testproject
 directory.
 
+You can also add the [TypeScript.Incremental nuget
+package][https://www.nuget.org/packages/TypeScript.Incremental/] to your
+project, which will do all the heavy lifting for you.
+
 ## How does it work?
 
 That's easy! It works by maintaining a dependency graph between the
