@@ -29,7 +29,7 @@ reference tag at the start of the file, e.g.:
 
 At some point, maybe it will learn how to understand
 
-    module('other')
+    import x = require('other')
 
 too. But for now, it only understands the simple one.
 
