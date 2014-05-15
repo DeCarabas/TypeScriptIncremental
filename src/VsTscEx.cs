@@ -124,24 +124,46 @@ namespace TypeScript.Tasks
             return innerTask.Execute();
         }
 
-        ITaskItem ConcatenateOutput( string targetFile, ITaskItem[] generatedJavascript )
+        ITaskItem ConcatenateOutput(string targetFile, ITaskItem[] generatedJavascript)
         {
             string targetMap = targetFile + ".map";
 
-            using(var targetWriter = File.CreateText(targetFile))
-            using(var targetMapWriter = File.CreateText(targetMap))
-            using(var mapIndex = new SourceIndexWriter(targetMapWriter, targetFile))
+            using (var targetWriter = File.CreateText(targetFile))
+            using (var targetMapWriter = File.CreateText(targetMap))
+            using (var mapIndex = new SourceIndexWriter(targetMapWriter, targetFile))
             {
-                // Load all the source maps.
-                // Concatenate the generated javascript:
-                //    -Filter out the source map directives. 
-                //    -Build the new source map as you do it, bumping the line offsets where necessary.
-                //
-                // Write the new source map directive at the end of the concatenated JS.   
+                int lineNumber = 0;
+                for (int i = 0; i < generatedJavascript.Length; i++)
+                {
+                    string jsPath = generatedJavascript[i].GetMetadata("FullPath");
+
+                    string mapPath = jsPath + ".map";
+                    if (File.Exists(mapPath))
+                    {
+                        using (var mapReader = File.OpenText(mapPath))
+                        {
+                            mapIndex.WriteMap(lineNumber, 0, mapReader);
+                        }
+                    }
+
+                    using (var jsReader = File.OpenText(jsPath))
+                    {
+                        string line;
+                        while ((line = jsReader.ReadLine()) != null)
+                        {
+                            if (!line.StartsWith("//# sourceMappingURL=", StringComparison.Ordinal))
+                            {
+                                targetWriter.WriteLine(line);
+                                lineNumber++;
+                            }
+                        }
+                    }
+                }
+
+                targetWriter.WriteLine("//# sourceMappingURL={0}", Path.GetFileName(targetMap));
             }
 
-            
-            throw new NotImplementedException();
+            return new TaskItem(targetFile);
         }
 
         bool EnsureTypescriptLoaded(string path)
@@ -152,7 +174,7 @@ namespace TypeScript.Tasks
                 assembly.GetType("TypeScript.Tasks.VsTsc");
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Log.LogMessage("Exception loading typescript DLL: {0}", e.Message);
                 return false;
@@ -190,16 +212,16 @@ namespace TypeScript.Tasks
                 this.Compile,
                 out generatedJavascript);
 
-            if ( !String.IsNullOrEmpty( OutFile ) )
+            if (!String.IsNullOrEmpty(OutFile))
             {
-                ITaskItem concatenated = ConcatenateOutput( generatedJavascript );
+                ITaskItem concatenated = ConcatenateOutput(OutFile, generatedJavascript);
                 GeneratedJavascript = new ITaskItem[] { concatenated };
             }
             else
             {
                 GeneratedJavascript = generatedJavascript;
             }
-            
+
             if (AfterBuildHook != null) { AfterBuildHook(this); }
 
             return result;
