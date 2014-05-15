@@ -65,6 +65,12 @@ namespace TypeScript.Tasks
         public ITaskItem[] GeneratedJavascript { get; set; }
 
         /// <summary>
+        /// Gets or sets the intermediate output path, used for temporary work.
+        /// </summary>
+        [Required]
+        public string IntermediateOutputPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the output directory for the generated javascript.
         /// </summary>
         public string OutDir { get; set; }
@@ -118,6 +124,26 @@ namespace TypeScript.Tasks
             return innerTask.Execute();
         }
 
+        ITaskItem ConcatenateOutput( string targetFile, ITaskItem[] generatedJavascript )
+        {
+            string targetMap = targetFile + ".map";
+
+            using(var targetWriter = File.CreateText(targetFile))
+            using(var targetMapWriter = File.CreateText(targetMap))
+            using(var mapIndex = new SourceIndexWriter(targetMapWriter, targetFile))
+            {
+                // Load all the source maps.
+                // Concatenate the generated javascript:
+                //    -Filter out the source map directives. 
+                //    -Build the new source map as you do it, bumping the line offsets where necessary.
+                //
+                // Write the new source map directive at the end of the concatenated JS.   
+            }
+
+            
+            throw new NotImplementedException();
+        }
+
         bool EnsureTypescriptLoaded(string path)
         {
             try
@@ -141,10 +167,10 @@ namespace TypeScript.Tasks
         {
             if (FullPathsToFiles == null) { return true; }
 
+            string outputDirectory = OutDir;
             if (!String.IsNullOrEmpty(OutFile))
             {
-                Log.LogError("The OutFile parameter on the VsTscEx task is not supported right now, sorry.");
-                return false;
+                outputDirectory = IntermediateOutputPath;
             }
 
             if (!EnsureTypescriptLoaded(TypeScriptPath))
@@ -163,8 +189,17 @@ namespace TypeScript.Tasks
                 this.Log,
                 this.Compile,
                 out generatedJavascript);
-            GeneratedJavascript = generatedJavascript;
 
+            if ( !String.IsNullOrEmpty( OutFile ) )
+            {
+                ITaskItem concatenated = ConcatenateOutput( generatedJavascript );
+                GeneratedJavascript = new ITaskItem[] { concatenated };
+            }
+            else
+            {
+                GeneratedJavascript = generatedJavascript;
+            }
+            
             if (AfterBuildHook != null) { AfterBuildHook(this); }
 
             return result;

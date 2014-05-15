@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SourceIndexWriter.cs" />
     <Compile Include="DependencyRecord.cs" />
     <Compile Include="DependencyCache.cs" />
     <Compile Include="IncrementalAnalysis.cs" />
@@ -61,7 +62,6 @@
     <Content Include="TypeScript.Incremental.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

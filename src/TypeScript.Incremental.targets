@@ -30,6 +30,7 @@ This file overrides the standard typescript targets to do incremental compilatio
       Configurations="$(TypeScriptBuildConfigurations)"
       DependencyCache="$(TscExDependencyCache)"
       FullPathsToFiles="@(TypeScriptCompile)"
+      IntermediateOutputPath="$(IntermediateOutputPath)"
       OutDir="$(TypeScriptOutDir)"
       OutFile="$(TypeScriptOutFile)"
       ProjectDir="$(ProjectDir)"
